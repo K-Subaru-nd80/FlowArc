@@ -1,103 +1,199 @@
-import Image from "next/image";
+'use client';
+
+import React, { useState, useEffect } from 'react';
+import { getAuth, onAuthStateChanged, User } from 'firebase/auth';
+import SignInButton from './components/SignInButton';
+import SkillForm from './components/SkillForm';
+import SkillCard from './components/SkillCard';
+import LogRecorder from './components/LogRecorder';
+import { addSkill, getUserSkills, Skill } from './firestore';
+import './firebaseInit'; // Firebase初期化
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const [user, setUser] = useState<User | null>(null);
+  const [skills, setSkills] = useState<Skill[]>([]);
+  const [showSkillForm, setShowSkillForm] = useState(false);
+  const [selectedSkill, setSelectedSkill] = useState<Skill | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
+  useEffect(() => {
+    const auth = getAuth();
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setUser(user);
+      setIsLoading(false);
+      if (user) {
+        loadUserSkills(user.uid);
+      }
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  const loadUserSkills = async (userId: string) => {
+    try {
+      const userSkills = await getUserSkills(userId);
+      setSkills(userSkills);
+    } catch (error) {
+      console.error('スキル取得エラー:', error);
+    }
+  };
+
+  const handleAddSkill = async (skillName: string, category?: string) => {
+    if (!user) return;
+
+    try {
+      await addSkill(user.uid, skillName, category);
+      await loadUserSkills(user.uid);
+      setShowSkillForm(false);
+    } catch (error) {
+      console.error('スキル追加エラー:', error);
+      alert('スキルの追加に失敗しました');
+    }
+  };
+
+  const handleSkillClick = (skill: Skill) => {
+    setSelectedSkill(skill);
+  };
+
+  const handleLogSaved = () => {
+    if (user) {
+      loadUserSkills(user.uid);
+    }
+    setSelectedSkill(null);
+  };
+
+  if (isLoading) {
+    return (
+      <main style={{ 
+        padding: 'var(--spacing-base)', 
+        textAlign: 'center',
+        minHeight: '100vh',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}>
+        <div>読み込み中...</div>
       </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
+    );
+  }
+
+  if (!user) {
+    return (
+      <main style={{ 
+        padding: 'var(--spacing-base)', 
+        textAlign: 'center',
+        minHeight: '100vh',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}>
+        <h1 style={{ marginBottom: 'var(--spacing-base)' }}>FlowArc</h1>
+        <p style={{ 
+          marginBottom: 'calc(var(--spacing-base) * 2)',
+          color: '#666',
+          fontSize: 'var(--font-size-large)',
+        }}>
+          忘れさせない、あなたの技能を。
+        </p>
+        <SignInButton />
+      </main>
+    );
+  }
+
+  if (selectedSkill) {
+    return (
+      <main style={{ padding: 'var(--spacing-base)' }}>
+        <div style={{ marginBottom: 'var(--spacing-base)' }}>
+          <button
+            onClick={() => setSelectedSkill(null)}
+            style={{
+              padding: '4px 8px',
+              backgroundColor: '#f0f0f0',
+              border: 'none',
+              borderRadius: 'var(--border-radius)',
+              cursor: 'pointer',
+              fontSize: 'var(--font-size-small)',
+            }}
+          >
+            ← 戻る
+          </button>
+        </div>
+        <LogRecorder
+          skillId={selectedSkill.id}
+          skillName={selectedSkill.name}
+          userId={user.uid}
+          onLogSaved={handleLogSaved}
+        />
+      </main>
+    );
+  }
+
+  return (
+    <main style={{ padding: 'var(--spacing-base)' }}>
+      {/* ヘッダー */}
+      <div style={{
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: 'calc(var(--spacing-base) * 2)',
+      }}>
+        <div>
+          <h1 style={{ margin: 0 }}>FlowArc</h1>
+          <p style={{ margin: 0, color: '#666', fontSize: 'var(--font-size-small)' }}>
+            ようこそ、{user.displayName || 'ユーザー'}さん
+          </p>
+        </div>
+        <button
+          onClick={() => setShowSkillForm(true)}
+          style={{
+            padding: 'var(--spacing-base)',
+            backgroundColor: 'var(--color-primary)',
+            color: 'white',
+            border: 'none',
+            borderRadius: 'var(--border-radius)',
+            cursor: 'pointer',
+            fontSize: 'var(--font-size-base)',
+          }}
         >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
+          + スキル追加
+        </button>
+      </div>
+
+      {/* スキル追加フォーム */}
+      {showSkillForm && (
+        <div style={{ marginBottom: 'calc(var(--spacing-base) * 2)' }}>
+          <SkillForm
+            onSubmit={handleAddSkill}
+            onCancel={() => setShowSkillForm(false)}
           />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+        </div>
+      )}
+
+      {/* スキル一覧 */}
+      {skills.length === 0 ? (
+        <div style={{
+          textAlign: 'center',
+          padding: 'calc(var(--spacing-base) * 4)',
+          color: '#666',
+        }}>
+          <p>まだスキルが登録されていません</p>
+          <p style={{ fontSize: 'var(--font-size-small)' }}>
+            「+ スキル追加」ボタンから最初のスキルを追加してみましょう
+          </p>
+        </div>
+      ) : (
+        <div>
+          <h2 style={{ marginBottom: 'var(--spacing-base)' }}>あなたのスキル</h2>
+          {skills.map((skill) => (
+            <SkillCard
+              key={skill.id}
+              skill={skill}
+              onClick={() => handleSkillClick(skill)}
+            />
+          ))}
+        </div>
+      )}
+    </main>
   );
 }
