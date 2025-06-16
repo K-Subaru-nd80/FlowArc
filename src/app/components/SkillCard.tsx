@@ -1,12 +1,14 @@
 import React from 'react';
 import { Skill } from '../firestore';
+import DeleteSkillButton from './DeleteSkillButton';
 
 interface SkillCardProps {
   skill: Skill;
   onClick?: () => void;
+  onDelete?: () => void;
 }
 
-const SkillCard: React.FC<SkillCardProps> = ({ skill, onClick }) => {
+const SkillCard: React.FC<SkillCardProps> = ({ skill, onClick, onDelete }) => {
   const formatDate = (date: Date): string => {
     const today = new Date();
     const diffTime = date.getTime() - today.getTime();
@@ -47,7 +49,6 @@ const SkillCard: React.FC<SkillCardProps> = ({ skill, onClick }) => {
 
   return (
     <div
-      onClick={onClick}
       style={{
         padding: 'var(--spacing-base)',
         border: `2px solid ${cardStyle.borderColor}`,
@@ -56,18 +57,13 @@ const SkillCard: React.FC<SkillCardProps> = ({ skill, onClick }) => {
         cursor: onClick ? 'pointer' : 'default',
         transition: 'all 0.3s ease',
         marginBottom: 'var(--spacing-base)',
+        position: 'relative',
+        userSelect: 'none',
       }}
-      onMouseEnter={(e) => {
-        if (onClick) {
-          e.currentTarget.style.transform = 'translateY(-2px)';
-          e.currentTarget.style.boxShadow = '0 4px 8px rgba(0,0,0,0.1)';
-        }
-      }}
-      onMouseLeave={(e) => {
-        if (onClick) {
-          e.currentTarget.style.transform = 'translateY(0)';
-          e.currentTarget.style.boxShadow = 'none';
-        }
+      onClick={(e) => {
+        // 削除ボタンがクリックされた場合は何もしない
+        if ((e.target as HTMLElement).closest('.delete-skill-button')) return;
+        onClick && onClick();
       }}
     >
       <div style={{
@@ -115,6 +111,7 @@ const SkillCard: React.FC<SkillCardProps> = ({ skill, onClick }) => {
           {formatDate(skill.nextReviewDate)}
         </span>
       </div>
+      <DeleteSkillButton className="delete-skill-button" skillId={skill.id} onSkillDeleted={onDelete} />
     </div>
   );
 };

@@ -8,6 +8,7 @@ import SkillCard from './components/SkillCard';
 import LogRecorder from './components/LogRecorder';
 import { addSkill, getUserSkills, Skill } from './firestore';
 import './firebaseInit'; // Firebase初期化
+import LogoutButton from './components/LogoutButton';
 
 export default function Home() {
   const [user, setUser] = useState<User | null>(null);
@@ -51,15 +52,15 @@ export default function Home() {
     }
   };
 
-  const handleSkillClick = (skill: Skill) => {
-    setSelectedSkill(skill);
-  };
-
   const handleLogSaved = () => {
     if (user) {
       loadUserSkills(user.uid);
     }
     setSelectedSkill(null);
+  };
+
+  const handleSkillDeleted = (deletedId: string) => {
+    setSkills((prevSkills) => prevSkills.filter((skill) => skill.id !== deletedId));
   };
 
   if (isLoading) {
@@ -144,20 +145,24 @@ export default function Home() {
             ようこそ、{user.displayName || 'ユーザー'}さん
           </p>
         </div>
-        <button
-          onClick={() => setShowSkillForm(true)}
-          style={{
-            padding: 'var(--spacing-base)',
-            backgroundColor: 'var(--color-primary)',
-            color: 'white',
-            border: 'none',
-            borderRadius: 'var(--border-radius)',
-            cursor: 'pointer',
-            fontSize: 'var(--font-size-base)',
-          }}
-        >
-          + スキル追加
-        </button>
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          <button
+            onClick={() => setShowSkillForm(true)}
+            style={{
+              padding: 'var(--spacing-base)',
+              backgroundColor: 'var(--color-primary)',
+              color: 'white',
+              border: 'none',
+              borderRadius: 'var(--border-radius)',
+              cursor: 'pointer',
+              fontSize: 'var(--font-size-base)',
+              marginRight: 'var(--spacing-base)',
+            }}
+          >
+            + スキル追加
+          </button>
+          <LogoutButton />
+        </div>
       </div>
 
       {/* スキル追加フォーム */}
@@ -189,7 +194,8 @@ export default function Home() {
             <SkillCard
               key={skill.id}
               skill={skill}
-              onClick={() => handleSkillClick(skill)}
+              onClick={() => setSelectedSkill(skill)}
+              onDelete={() => handleSkillDeleted(skill.id)}
             />
           ))}
         </div>
