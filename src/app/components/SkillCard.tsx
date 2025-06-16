@@ -61,52 +61,29 @@ const SkillCard: React.FC<SkillCardProps> = ({ skill, onClick, onDelete }) => {
         userSelect: 'none',
       }}
       onClick={(e) => {
-        // 削除ボタンがクリックされた場合は何もしない
-        if ((e.target as HTMLElement).closest('.delete-skill-button')) return;
+        // 削除ボタンまたは削除ダイアログがクリックされた場合は何もしない
+        const target = e.target as HTMLElement;
+        if (target.closest('.delete-skill-button') || target.closest('.delete-confirm-modal')) return;
         onClick && onClick();
       }}
     >
-      <div style={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: '4px',
-      }}>
-        <h3 style={{
-          margin: 0,
-          fontSize: 'var(--font-size-large)',
-          fontWeight: 'bold',
-        }}>
-          {skill.name}
-        </h3>
+      <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px'}}>
+        <h3 style={{margin: 0, fontSize: 'var(--font-size-large)', fontWeight: 'bold'}}>{skill.name}</h3>
         {skill.category && (
-          <span style={{
-            fontSize: 'var(--font-size-small)',
-            color: '#666',
-            backgroundColor: '#f0f0f0',
-            padding: '2px 6px',
-            borderRadius: '12px',
-          }}>
-            {skill.category}
-          </span>
+          <span style={{fontSize: 'var(--font-size-small)', color: '#666', backgroundColor: '#f0f0f0', padding: '2px 6px', borderRadius: '12px'}}>{skill.category}</span>
         )}
       </div>
-
-      <div style={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-      }}>
+      <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
+        <span style={{fontSize: 'var(--font-size-small)', color: '#666'}}>次回復習予定</span>
         <span style={{
-          fontSize: 'var(--font-size-small)',
-          color: '#666',
-        }}>
-          次回復習予定
-        </span>
-        <span style={{
-          fontSize: 'var(--font-size-base)',
+          fontSize: '1.2em',
           fontWeight: 'bold',
           color: isOverdue ? '#f44336' : isToday ? '#ff9800' : 'var(--color-text)',
+          background: '#fffbe6',
+          borderRadius: 8,
+          padding: '2px 10px',
+          marginLeft: 8,
+          boxShadow: '0 1px 4px rgba(255,200,0,0.08)'
         }}>
           {formatDate(skill.nextReviewDate)}
         </span>

@@ -5,24 +5,35 @@ const SignInButton: React.FC = () => {
   const handleSignIn = async () => {
     try {
       await signInWithGoogle();
-      alert("ログイン成功！");
     } catch (err) {
       console.error("Login error:", err);
-      alert("ログインに失敗しました。");
     }
   };
 
   return (
-    <button onClick={handleSignIn} style={{
-      padding: "var(--spacing-base)",
-      backgroundColor: "var(--color-primary)",
-      color: "var(--color-background)",
-      border: "none",
-      borderRadius: "var(--border-radius)",
-      cursor: "pointer",
-    }}>
-      Googleでログイン
-    </button>
+    <div style={{ width: '100%', maxWidth: 360, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 16 }}>
+      <button
+        onClick={handleSignIn}
+        style={{
+          width: '100%',
+          padding: '14px 0',
+          backgroundColor: '#fff',
+          color: '#444',
+          border: '1px solid #ddd',
+          borderRadius: 8,
+          fontSize: 18,
+          fontWeight: 500,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: 10,
+          boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
+        }}
+      >
+        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" style={{ width: 24, height: 24, marginRight: 8 }} />
+        <span style={{ fontSize: 17 }}>Google でログイン</span>
+      </button>
+    </div>
   );
 };
 
