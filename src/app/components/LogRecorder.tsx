@@ -99,7 +99,7 @@ const LogRecorder: React.FC<LogRecorderProps> = ({ skillId, skillName, userId, o
             fontSize: 'var(--font-size-small)',
           }}
         >
-          🎤 音声入力
+          🎙️ 音声入力
         </button>
         <button
           onClick={() => setInputMode('text')}

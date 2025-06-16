@@ -76,7 +76,7 @@ const VoiceInput: React.FC<VoiceInputProps> = ({ onResult, onError, disabled = f
           transform: isRecording ? 'scale(1.1)' : 'scale(1)',
         }}
       >
-        {isRecording ? '🛑' : '🎤'}
+        {isRecording ? '🛑' : '🎙️'}
       </button>
       <div style={{
         marginTop: 'var(--spacing-base)',
