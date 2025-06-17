@@ -1,5 +1,6 @@
 import React from "react";
 import { signInWithGoogle } from "../auth";
+import Image from 'next/image';
 
 const SignInButton: React.FC = () => {
   const handleSignIn = async () => {
@@ -30,7 +31,7 @@ const SignInButton: React.FC = () => {
           boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
         }}
       >
-        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" style={{ width: 24, height: 24, marginRight: 8 }} />
+        <Image src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" width={24} height={24} style={{ marginRight: 8 }} />
         <span style={{ fontSize: 17 }}>Google でログイン</span>
       </button>
     </div>

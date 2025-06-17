@@ -16,7 +16,7 @@ const DeleteSkillButton: React.FC<DeleteSkillButtonProps> = ({ skillId, onSkillD
     try {
       await deleteDoc(doc(firestore, 'skills', skillId));
       onSkillDeleted?.();
-    } catch (error) {
+    } catch {
       // エラー時は何もしない
     }
     setShowConfirm(false);

@@ -25,23 +25,28 @@ const SkillCard: React.FC<SkillCardProps> = ({ skill, onClick, onDelete }) => {
   const isTomorrow = formatDate(skill.nextReviewDate) === '明日';
 
   const getCardStyle = () => {
-    let backgroundColor = 'var(--color-background)';
-    let borderColor = '#e0e0e0';
+    let backgroundColor = '#ffffff';
+    let borderColor = '#e9ecef';
+    let accentColor = '#6ccbc7';
 
     if (isOverdue) {
-      backgroundColor = '#ffebee';
-      borderColor = '#f44336';
+      backgroundColor = 'linear-gradient(135deg, #fff5f5 0%, #ffe6e6 100%)';
+      borderColor = '#f56565';
+      accentColor = '#f56565';
     } else if (isToday) {
-      backgroundColor = '#fff3e0';
-      borderColor = '#ff9800';
+      backgroundColor = 'linear-gradient(135deg, #fffbf0 0%, #fff3d3 100%)';
+      borderColor = '#ed8936';
+      accentColor = '#ed8936';
     } else if (isTomorrow) {
-      backgroundColor = '#f3e5f5';
-      borderColor = '#9c27b0';
+      backgroundColor = 'linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%)';
+      borderColor = '#805ad5';
+      accentColor = '#805ad5';
     }
 
     return {
       backgroundColor,
       borderColor,
+      accentColor,
     };
   };
 
@@ -50,44 +55,91 @@ const SkillCard: React.FC<SkillCardProps> = ({ skill, onClick, onDelete }) => {
   return (
     <div
       style={{
-        padding: 'var(--spacing-base)',
+        padding: 20,
         border: `2px solid ${cardStyle.borderColor}`,
-        borderRadius: 'var(--border-radius)',
-        backgroundColor: cardStyle.backgroundColor,
+        borderRadius: 16,
+        background: cardStyle.backgroundColor,
         cursor: onClick ? 'pointer' : 'default',
         transition: 'all 0.3s ease',
-        marginBottom: 'var(--spacing-base)',
+        marginBottom: 16,
         position: 'relative',
         userSelect: 'none',
+        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.05)',
+        overflow: 'hidden'
+      }}
+      onMouseEnter={(e) => {
+        if (onClick) {
+          e.currentTarget.style.transform = 'translateY(-3px)';
+          e.currentTarget.style.boxShadow = '0 8px 24px rgba(0, 0, 0, 0.1)';
+        }
+      }}
+      onMouseLeave={(e) => {
+        if (onClick) {
+          e.currentTarget.style.transform = 'translateY(0)';
+          e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.05)';
+        }
       }}
       onClick={(e) => {
         // 削除ボタンまたは削除ダイアログがクリックされた場合は何もしない
         const target = e.target as HTMLElement;
         if (target.closest('.delete-skill-button') || target.closest('.delete-confirm-modal')) return;
-        onClick && onClick();
+        if (onClick) onClick();
       }}
     >
-      <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px'}}>
-        <h3 style={{margin: 0, fontSize: 'var(--font-size-large)', fontWeight: 'bold'}}>{skill.name}</h3>
+      {/* 装飾的なアクセント */}
+      <div style={{
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        width: '100%',
+        height: 4,
+        background: cardStyle.accentColor,
+        zIndex: 1
+      }} />
+      
+      <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12}}>
+        <h3 style={{
+          margin: 0, 
+          fontSize: 20, 
+          fontWeight: 700,
+          color: '#2d3748',
+          lineHeight: 1.3
+        }}>
+          {skill.name}
+        </h3>
         {skill.category && (
-          <span style={{fontSize: 'var(--font-size-small)', color: '#666', backgroundColor: '#f0f0f0', padding: '2px 6px', borderRadius: '12px'}}>{skill.category}</span>
+          <span style={{
+            fontSize: 12, 
+            color: '#718096', 
+            backgroundColor: '#f7fafc', 
+            padding: '4px 12px', 
+            borderRadius: 20,
+            fontWeight: 500,
+            border: '1px solid #e2e8f0',
+            marginLeft: 12
+          }}>
+            {skill.category}
+          </span>
         )}
       </div>
+      
       <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
-        <span style={{fontSize: 'var(--font-size-small)', color: '#666'}}>次回復習予定</span>
+        <span style={{fontSize: 14, color: '#718096', fontWeight: 500}}>次回復習予定</span>
         <span style={{
-          fontSize: '1.2em',
-          fontWeight: 'bold',
-          color: isOverdue ? '#f44336' : isToday ? '#ff9800' : 'var(--color-text)',
-          background: '#fffbe6',
-          borderRadius: 8,
-          padding: '2px 10px',
-          marginLeft: 8,
-          boxShadow: '0 1px 4px rgba(255,200,0,0.08)'
+          fontSize: 16,
+          fontWeight: 700,
+          color: isOverdue ? '#f56565' : isToday ? '#ed8936' : '#4a5568',
+          background: isOverdue ? 'rgba(245, 101, 101, 0.1)' : isToday ? 'rgba(237, 137, 54, 0.1)' : 'rgba(74, 85, 104, 0.1)',
+          borderRadius: 12,
+          padding: '6px 14px',
+          marginLeft: 12,
+          boxShadow: 'inset 0 1px 3px rgba(0, 0, 0, 0.05)',
+          border: `1px solid ${isOverdue ? 'rgba(245, 101, 101, 0.2)' : isToday ? 'rgba(237, 137, 54, 0.2)' : 'rgba(74, 85, 104, 0.2)'}`
         }}>
           {formatDate(skill.nextReviewDate)}
         </span>
       </div>
+      
       <DeleteSkillButton className="delete-skill-button" skillId={skill.id} onSkillDeleted={onDelete} />
     </div>
   );

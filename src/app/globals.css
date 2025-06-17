@@ -2,22 +2,132 @@
 
 /* CSS変数の定義 */
 :root {
-  --color-primary: #0070f3;
-  --color-secondary: #1c1c1c;
+  --color-primary: #418089;
+  --color-secondary: #6ccbc7;
+  --color-accent: #5e8e96;
   --color-background: #ffffff;
   --color-text: #333333;
+  --color-text-light: #666666;
+  --color-text-muted: #aaaaaa;
+  --color-border: #e0e0e0;
+  --color-border-light: #f0f0f0;
+  --color-success: #4caf50;
+  --color-warning: #ff9800;
+  --color-error: #f44336;
+  --color-purple: #9c27b0;
+  
+  --font-size-xs: 11px;
+  --font-size-sm: 14px;
   --font-size-base: 16px;
-  --font-size-large: 20px;
-  --font-size-small: 14px;
-  --spacing-base: 8px;
-  --border-radius: 4px;
+  --font-size-lg: 18px;
+  --font-size-xl: 20px;
+  --font-size-2xl: 24px;
+  --font-size-3xl: 32px;
+  
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-base: 12px;
+  --spacing-lg: 16px;
+  --spacing-xl: 20px;
+  --spacing-2xl: 24px;
+  --spacing-3xl: 32px;
+  
+  --border-radius-sm: 8px;
+  --border-radius: 12px;
+  --border-radius-lg: 16px;
+  --border-radius-xl: 20px;
+  --border-radius-full: 50%;
+  
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.04);
+  --shadow-base: 0 2px 8px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.08);
+  --shadow-xl: 0 8px 24px rgba(0, 0, 0, 0.10);
+  
+  --transition-fast: 0.15s ease;
+  --transition-base: 0.2s ease;
+  --transition-slow: 0.3s ease;
 }
 
 /* グローバルスタイル */
+* {
+  box-sizing: border-box;
+}
+
 body {
-  font-family: Arial, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
   background-color: var(--color-background);
   color: var(--color-text);
   margin: 0;
   padding: 0;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+  border: none;
+  outline: none;
+  transition: var(--transition-base);
+}
+
+button:hover {
+  transform: translateY(-1px);
+}
+
+button:active {
+  transform: translateY(0);
+}
+
+/* ユーティリティクラス */
+.button-primary {
+  background: var(--color-secondary);
+  color: white;
+  padding: var(--spacing-base) var(--spacing-xl);
+  border-radius: var(--border-radius);
+  font-weight: 600;
+  font-size: var(--font-size-base);
+  box-shadow: var(--shadow-base);
+}
+
+.button-secondary {
+  background: white;
+  color: var(--color-text);
+  padding: var(--spacing-base) var(--spacing-xl);
+  border: 2px solid var(--color-border);
+  border-radius: var(--border-radius);
+  font-weight: 600;
+  font-size: var(--font-size-base);
+  box-shadow: var(--shadow-sm);
+}
+
+.card {
+  background: white;
+  border: 2px solid var(--color-border);
+  border-radius: var(--border-radius-lg);
+  padding: var(--spacing-lg);
+  box-shadow: var(--shadow-base);
+  transition: var(--transition-base);
+}
+
+.card:hover {
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-2px);
+}
+
+.header {
+  background: var(--color-primary);
+  color: white;
+  padding: var(--spacing-lg) var(--spacing-2xl);
+  box-shadow: var(--shadow-base);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 var(--spacing-base);
 }

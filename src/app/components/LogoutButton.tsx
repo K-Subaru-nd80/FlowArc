@@ -8,8 +8,7 @@ const LogoutButton: React.FC = () => {
     const auth = getAuth();
     try {
       await signOut(auth);
-      // メッセージ表示なし
-    } catch (error) {
+    } catch {
       // エラー時もメッセージ表示なし
     }
     setShowConfirm(false);
@@ -17,8 +16,28 @@ const LogoutButton: React.FC = () => {
 
   return (
     <div style={{ display: 'inline-block', position: 'relative', verticalAlign: 'top' }}>
-      <button onClick={() => setShowConfirm(true)} className="logout-button">
-        ログアウト
+      <button
+        onClick={() => setShowConfirm(true)}
+        className="logout-button"
+        style={{
+          fontFamily: '"Geist", "Noto Sans JP", "Yu Gothic", "Meiryo", sans-serif',
+          fontSize: 15,
+          background: '#fff',
+          color: '#333',
+          border: 'none',
+          borderRadius: 8,
+          padding: '6px 18px',
+          fontWeight: 500,
+          boxShadow: '0 1px 4px rgba(0,0,0,0.08)',
+          cursor: 'pointer',
+          transition: 'box-shadow 0.2s',
+          outline: 'none',
+          position: 'relative',
+          display: 'flex',
+          alignItems: 'center',
+        }}
+      >
+        <span style={{ fontFamily: 'inherit', fontSize: 15, fontWeight: 500 }}>ログアウト</span>
       </button>
       {showConfirm && (
         <div className="logout-confirm-modal" style={{
@@ -36,18 +55,19 @@ const LogoutButton: React.FC = () => {
           <div style={{
             background: '#fff',
             border: '1px solid #1976d2',
-            borderRadius: 12,
-            boxShadow: '0 2px 12px rgba(0,0,0,0.18)',
+            borderRadius: 14,
+            boxShadow: '0 2px 16px rgba(0,0,0,0.13)',
             padding: '20px 24px',
             minWidth: 220,
             textAlign: 'center',
             maxWidth: '90vw',
+            fontFamily: '"Geist", "Noto Sans JP", "Yu Gothic", "Meiryo", sans-serif',
           }}>
-            <div style={{ color: '#222', fontWeight: 700, marginBottom: 12, fontSize: 18 }}>本当にログアウトしますか？</div>
+            <div style={{ color: '#222', fontWeight: 600, marginBottom: 12, fontSize: 16, fontFamily: 'inherit' }}>本当にログアウトしますか？</div>
             <div style={{ display: 'flex', gap: 12, justifyContent: 'center', marginTop: 8 }}>
               <button
                 style={{
-                  background: '#1976d2', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 20px', fontWeight: 600, cursor: 'pointer', fontSize: 16
+                  background: '#1976d2', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 18px', fontWeight: 600, cursor: 'pointer', fontSize: 15, fontFamily: 'inherit', boxShadow: '0 1px 4px rgba(0,0,0,0.08)'
                 }}
                 onClick={handleLogout}
               >
@@ -55,7 +75,7 @@ const LogoutButton: React.FC = () => {
               </button>
               <button
                 style={{
-                  background: '#fff', color: '#1976d2', border: '1px solid #1976d2', borderRadius: 8, padding: '10px 20px', fontWeight: 600, cursor: 'pointer', fontSize: 16
+                  background: '#fff', color: '#1976d2', border: '1px solid #1976d2', borderRadius: 8, padding: '8px 18px', fontWeight: 600, cursor: 'pointer', fontSize: 15, fontFamily: 'inherit', boxShadow: '0 1px 4px rgba(0,0,0,0.08)'
                 }}
                 onClick={() => setShowConfirm(false)}
               >
