@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState } from 'react';
 import { deleteDoc, doc } from 'firebase/firestore';
 import { getFirestore } from 'firebase/firestore';
@@ -12,21 +14,41 @@ const DeleteSkillButton: React.FC<DeleteSkillButtonProps> = ({ skillId, onSkillD
   const [showConfirm, setShowConfirm] = useState(false);
 
   const handleDelete = async () => {
-    const firestore = getFirestore();
     try {
+      const firestore = getFirestore();
       await deleteDoc(doc(firestore, 'skills', skillId));
       onSkillDeleted?.();
-    } catch {
-      // エラー時は何もしない
+    } catch (error) {
+      console.error('削除エラー:', error);
     }
     setShowConfirm(false);
   };
 
+  const handleButtonClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    console.log('削除ボタンクリック - showConfirm:', showConfirm);
+    setShowConfirm(true);
+    console.log('setShowConfirm(true) 実行後');
+  };
+
+  const handleModalClose = () => {
+    console.log('モーダルを閉じます');
+    setShowConfirm(false);
+  };
+
+  const handleConfirmDelete = async () => {
+    console.log('削除を実行します');
+    await handleDelete();
+  };
+
+  console.log('レンダリング中 - showConfirm:', showConfirm);
+
   return (
-    <div style={{ display: 'inline-block', position: 'relative', verticalAlign: 'top' }}>
+    <div style={{ position: 'relative', display: 'inline-block' }}>
       <button
         type="button"
-        className={className ? className : ''}
+        className={className}
         style={{
           color: '#fff',
           background: '#f44336',
@@ -38,53 +60,91 @@ const DeleteSkillButton: React.FC<DeleteSkillButtonProps> = ({ skillId, onSkillD
           cursor: 'pointer',
           marginTop: 12,
           marginBottom: 0,
-          boxShadow: '0 1px 4px rgba(244,67,54,0.08)'
+          boxShadow: '0 1px 4px rgba(244,67,54,0.08)',
+          zIndex: 1
         }}
-        onClick={(e) => {
-          e.stopPropagation();
-          setShowConfirm(true);
-        }}
+        onClick={handleButtonClick}
       >
         削除
       </button>
+
       {showConfirm && (
-        <div className="delete-confirm-modal" style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          width: '100vw',
-          height: '100vh',
-          background: 'rgba(0,0,0,0.18)',
-          zIndex: 1000,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}>
-          <div style={{
-            background: '#fff',
-            border: '1px solid #f44336',
-            borderRadius: 12,
-            boxShadow: '0 2px 12px rgba(0,0,0,0.18)',
-            padding: '20px 24px',
-            minWidth: 220,
-            textAlign: 'center',
-            maxWidth: '90vw',
-          }}>
-            <div style={{ color: '#222', fontWeight: 700, marginBottom: 12, fontSize: 18 }}>本当に削除しますか？</div>
-            <div style={{ display: 'flex', gap: 12, justifyContent: 'center', marginTop: 8 }}>
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.7)',
+            zIndex: 999999,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '20px'
+          }}
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              handleModalClose();
+            }
+          }}
+        >
+          <div
+            style={{
+              backgroundColor: 'white',
+              borderRadius: '12px',
+              padding: '24px',
+              minWidth: '300px',
+              maxWidth: '90vw',
+              boxShadow: '0 10px 25px rgba(0, 0, 0, 0.3)',
+              border: '2px solid #f44336',
+              zIndex: 1000000
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{
+              fontSize: '18px',
+              fontWeight: 'bold',
+              color: '#333',
+              marginBottom: '16px',
+              textAlign: 'center'
+            }}>
+              本当に削除しますか？
+            </div>
+            
+            <div style={{
+              display: 'flex',
+              gap: '12px',
+              justifyContent: 'center'
+            }}>
               <button
                 style={{
-                  background: '#f44336', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 20px', fontWeight: 600, cursor: 'pointer', fontSize: 16
+                  backgroundColor: '#f44336',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '8px',
+                  padding: '12px 24px',
+                  fontSize: '16px',
+                  fontWeight: '600',
+                  cursor: 'pointer'
                 }}
-                onClick={handleDelete}
+                onClick={handleConfirmDelete}
               >
                 削除する
               </button>
+              
               <button
                 style={{
-                  background: '#fff', color: '#f44336', border: '1px solid #f44336', borderRadius: 8, padding: '10px 20px', fontWeight: 600, cursor: 'pointer', fontSize: 16
+                  backgroundColor: 'white',
+                  color: '#f44336',
+                  border: '2px solid #f44336',
+                  borderRadius: '8px',
+                  padding: '12px 24px',
+                  fontSize: '16px',
+                  fontWeight: '600',
+                  cursor: 'pointer'
                 }}
-                onClick={() => setShowConfirm(false)}
+                onClick={handleModalClose}
               >
                 キャンセル
               </button>

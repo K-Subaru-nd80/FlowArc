@@ -130,6 +130,9 @@ export default function Home() {
     setCategoryTab(tab);
   };
 
+  // カテゴリ名表示用
+  const showCategoryName = categoryTab !== 'all' && categoryTab !== 'category-select';
+
   if (isLoading) {
     return (
       <main style={{ padding: 'var(--spacing-base)', textAlign: 'center', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -236,20 +239,23 @@ export default function Home() {
                 overflow: 'hidden',
               }}
             >
-              <div
-                style={{
-                  position: 'absolute',
-                  top: 4,
-                  left: categoryTab === 'all' ? 4 : 86,
-                  width: 80,
-                  height: 40,
-                  borderRadius: 20,
-                  background: '#5e8e96',
-                  zIndex: 1,
-                  transition: 'left 0.2s ease',
-                  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.06)',
-                }}
-              />
+              {/* 水色のスイッチ部分をカテゴリ選択時は非表示に */}
+              {!(categoryTab !== 'all' && categoryTab !== 'category-select') && (
+                <div
+                  style={{
+                    position: 'absolute',
+                    top: 2, 
+                    left: categoryTab === 'all' ? 4 : 86,
+                    width: 80,
+                    height: 40,
+                    borderRadius: 20,
+                    background: '#5e8e96',
+                    zIndex: 1,
+                    transition: 'left 0.2s ease, top 0.2s cubic-bezier(0.4,0,0.2,1)',
+                    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.06)',
+                  }}
+                />
+              )}
               <button
                 type="button"
                 onClick={() => handleTabClick('all')}
@@ -336,6 +342,18 @@ export default function Home() {
           </div>
         ) : (
           <div style={{ minHeight: 400 }}>
+            {showCategoryName && (
+              <div style={{
+                fontSize: 18,
+                fontWeight: 600,
+                color: '#2d3748',
+                marginBottom: 16,
+                textAlign: 'center', 
+                letterSpacing: 1
+              }}>
+                カテゴリ: {categoryTab}
+              </div>
+            )}
             {filteredSkills.length === 0 ? (
               <div style={{ 
                 textAlign: 'center', 
