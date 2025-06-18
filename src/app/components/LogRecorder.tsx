@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import VoiceInput from './VoiceInput';
-import { analyzeLogWithLLM, sanitizeInput } from '../llmAnalysis';
+import { analyzeLogWithLLM, sanitizeInput, AnalysisResult } from '../llmAnalysis';
 
 interface LogRecorderProps {
   skillId: string;
@@ -14,6 +14,7 @@ const LogRecorder: React.FC<LogRecorderProps> = ({ skillId, skillName, userId, o
   const [feeling, setFeeling] = useState<'smooth' | 'difficult' | 'normal'>('normal');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [inputMode, setInputMode] = useState<'voice' | 'text'>('voice');
+  const [lastAnalysis, setLastAnalysis] = useState<AnalysisResult | null>(null);
 
   const handleVoiceResult = (transcript: string) => {
     setLogContent(transcript);
@@ -35,7 +36,7 @@ const LogRecorder: React.FC<LogRecorderProps> = ({ skillId, skillName, userId, o
       const sanitizedContent = sanitizeInput(logContent);
       
       // LLM分析を実行
-      const analysisResult = await analyzeLogWithLLM(sanitizedContent, skillName);
+      const analysisResult = await analyzeLogWithLLM(sanitizedContent, skillName, userId);
       
       // Firestoreに保存
       const response = await fetch('/api/save-log', {
@@ -59,6 +60,7 @@ const LogRecorder: React.FC<LogRecorderProps> = ({ skillId, skillName, userId, o
       // フォームをリセット
       setLogContent('');
       setFeeling('normal');
+      setLastAnalysis(analysisResult);
       onLogSaved();
       
       alert('ログを保存しました！');
@@ -212,6 +214,56 @@ const LogRecorder: React.FC<LogRecorderProps> = ({ skillId, skillName, userId, o
       >
         {isAnalyzing ? '分析中...' : 'ログを保存'}
       </button>
+
+      {/* 分析結果表示 */}
+      {lastAnalysis && (
+        <div style={{
+          marginTop: 'var(--spacing-base)',
+          padding: 'var(--spacing-base)',
+          backgroundColor: '#f0f8ff',
+          borderRadius: 'var(--border-radius)',
+          border: '1px solid #e0e8ff',
+        }}>
+          <h4 style={{ margin: '0 0 8px 0', fontSize: 'var(--font-size-small)', fontWeight: 'bold' }}>
+            📊 分析結果
+          </h4>
+          <div style={{ fontSize: 'var(--font-size-small)', lineHeight: '1.4' }}>
+            <div><strong>スキルレベル:</strong> {lastAnalysis.skillLevel}/10</div>
+            <div><strong>提案:</strong> {lastAnalysis.suggestion}</div>
+            {lastAnalysis.focusAreas && (
+              <div><strong>重点領域:</strong> {lastAnalysis.focusAreas.join(', ')}</div>
+            )}
+            {lastAnalysis.emotionalState && (
+              <div><strong>感情状態:</strong> {lastAnalysis.emotionalState}</div>
+            )}
+            {lastAnalysis.practiceQuality && (
+              <div><strong>練習の質:</strong> {lastAnalysis.practiceQuality}/10</div>
+            )}
+            {lastAnalysis.timeSpent && (
+              <div><strong>推定練習時間:</strong> {lastAnalysis.timeSpent}分</div>
+            )}
+            {lastAnalysis.motivation && (
+              <div><strong>モチベーション:</strong> {lastAnalysis.motivation}/10</div>
+            )}
+            {/* --- ここから復習日推定の比較 --- */}
+            {lastAnalysis.fsrsNextReview && (
+              <div style={{marginTop:8}}>
+                <strong>科学的推定（FSRS）:</strong> {new Date(lastAnalysis.fsrsNextReview).toLocaleDateString()}（{Math.ceil((new Date(lastAnalysis.fsrsNextReview).getTime() - Date.now())/(1000*60*60*24))}日後）
+              </div>
+            )}
+            {lastAnalysis.nextReviewInterval && (
+              <div>
+                <strong>AI推定（Gemini/LLM）:</strong> {lastAnalysis.nextReviewInterval}日後（{new Date(Date.now() + lastAnalysis.nextReviewInterval*24*60*60*1000).toLocaleDateString()}）
+              </div>
+            )}
+            {lastAnalysis.optimizedNextReview && (
+              <div>
+                <strong>最適化復習日:</strong> {new Date(lastAnalysis.optimizedNextReview).toLocaleDateString()}（{Math.ceil((new Date(lastAnalysis.optimizedNextReview).getTime() - Date.now())/(1000*60*60*24))}日後）
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 };

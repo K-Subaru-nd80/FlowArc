@@ -3,10 +3,24 @@ export interface AnalysisResult {
   confidence: number; // 0-1の信頼度
   suggestion: string; // 改善提案
   feeling: 'smooth' | 'difficult' | 'normal';
-  nextReviewInterval: number; // 次回復習までの日数
+  nextReviewInterval?: number; // 次回復習までの日数
+  difficulty: number; // 0-10の技能の客観的難易度
+  retention: number; // 0-1の記憶定着度
+
+  // 追加のLLM推論パラメーター
+  focusAreas?: string[]; // 集中すべき領域（例：「発音」、「文法」、「リズム」）
+  emotionalState?: string; // 感情状態（例：「やる気がある」、「疲れている」、「集中している」）
+  practiceQuality?: number; // 0-10の練習の質
+  timeSpent?: number; // 推定練習時間（分）
+  environment?: string; // 練習環境（例：「静か」、「騒がしい」、「集中できた」）
+  motivation?: number; // 0-10のモチベーションレベル
+
+  // --- 追加: 復習日推定の比較用 ---
+  fsrsNextReview?: string | Date;
+  optimizedNextReview?: string | Date;
 }
 
-export const analyzeLogWithLLM = async (logContent: string, skillName: string): Promise<AnalysisResult> => {
+export const analyzeLogWithLLM = async (logContent: string, skillName: string, userId: string): Promise<AnalysisResult> => {
   try {
     const response = await fetch('/api/analyze-log', {
       method: 'POST',
@@ -16,11 +30,15 @@ export const analyzeLogWithLLM = async (logContent: string, skillName: string): 
       body: JSON.stringify({
         logContent,
         skillName,
+        userId, // userIdを必ず含める
       }),
     });
 
     if (!response.ok) {
-      throw new Error('LLM分析に失敗しました');
+      // サーバーから返されたエラー詳細を取得
+      const errorDetail = await response.json();
+      console.error('LLM分析APIエラー:', errorDetail);
+      throw new Error('LLM分析に失敗しました: ' + (errorDetail?.error || '') + (errorDetail?.detail ? ' / ' + errorDetail.detail : ''));
     }
 
     const result = await response.json();
@@ -51,3 +69,6 @@ export const sanitizeInput = (input: string): string => {
 
   return input;
 };
+
+// 既存の呼び出し箇所を修正
+// analyzeLogWithLLM(sanitizedContent, skillName) → analyzeLogWithLLM(sanitizedContent, skillName, userId)

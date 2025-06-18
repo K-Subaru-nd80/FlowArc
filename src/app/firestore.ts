@@ -1,5 +1,6 @@
-import { getFirestore, collection, addDoc, query, orderBy, getDocs, where } from "firebase/firestore";
+import { getFirestore, collection, addDoc, query, orderBy, getDocs, where, doc, getDoc, setDoc } from "firebase/firestore";
 import app from "./firebaseInit";
+import { FSRSCard } from "./fsrs";
 
 const db = getFirestore(app);
 
@@ -22,6 +23,23 @@ export interface Log {
     skillLevel: number;
     confidence: number;
     suggestion: string;
+    feeling: 'smooth' | 'difficult' | 'normal';
+    nextReviewInterval: number;
+    difficulty: number;
+    retention: number;
+    focusAreas?: string[];
+    emotionalState?: string;
+    practiceQuality?: number;
+    timeSpent?: number;
+    environment?: string;
+    motivation?: number;
+  };
+  fsrsData?: {
+    nextReview: Date;
+    lastReviewed: Date;
+    stability: number;
+    difficulty: number;
+    state: number;
   };
   createdAt: Date;
   userId: string;
@@ -109,6 +127,55 @@ export const getUserLogs = async (userId: string): Promise<Log[]> => {
     return logs;
   } catch (error) {
     console.error("Error getting logs: ", error);
+    throw error;
+  }
+};
+
+// FSRS関連の操作
+export const getSkillFSRSCard = async (skillId: string, userId: string): Promise<FSRSCard | null> => {
+  try {
+    const cardDoc = doc(db, 'fsrs_cards', `${userId}_${skillId}`);
+    const cardSnapshot = await getDoc(cardDoc);
+    
+    if (!cardSnapshot.exists()) {
+      return null;
+    }
+    
+    const data = cardSnapshot.data();
+    // card.due, card.last_review などTimestamp→Date変換
+    const card = { ...data.card };
+    if (card.due && typeof card.due.toDate === 'function') {
+      card.due = card.due.toDate();
+    }
+    if (card.last_review && typeof card.last_review.toDate === 'function') {
+      card.last_review = card.last_review.toDate();
+    }
+    return {
+      cardId: data.cardId,
+      skillId: data.skillId,
+      card,
+      lastReviewed: data.lastReviewed.toDate(),
+      nextReview: data.nextReview.toDate(),
+    } as FSRSCard;
+  } catch (error) {
+    console.error("Error getting FSRS card: ", error);
+    return null;
+  }
+};
+
+export const updateSkillFSRSCard = async (skillId: string, userId: string, fsrsCard: FSRSCard): Promise<void> => {
+  try {
+    const cardDoc = doc(db, 'fsrs_cards', `${userId}_${skillId}`);
+    await setDoc(cardDoc, {
+      cardId: fsrsCard.cardId,
+      skillId: fsrsCard.skillId,
+      card: fsrsCard.card,
+      lastReviewed: fsrsCard.lastReviewed,
+      nextReview: fsrsCard.nextReview,
+      userId: userId,
+    });
+  } catch (error) {
+    console.error("Error updating FSRS card: ", error);
     throw error;
   }
 };
