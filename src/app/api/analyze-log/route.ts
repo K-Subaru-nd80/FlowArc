@@ -107,7 +107,7 @@ export async function POST(request: NextRequest) {
       let analysisResult;
       try {
         analysisResult = JSON.parse(analysisText);
-      } catch (parseError) {
+      } catch {
         analysisResult = {
           error: 'OpenAI出力のJSONパースに失敗',
           raw: analysisText
@@ -115,7 +115,7 @@ export async function POST(request: NextRequest) {
         return NextResponse.json(analysisResult);
       }
       // --- ここでFSRSロジックを適用 ---
-      let tempCard = createNewFSRSCard(skillName);
+      const tempCard = createNewFSRSCard(skillName);
       if (analysisResult.nextReviewInterval && Number.isFinite(analysisResult.nextReviewInterval)) {
         const now = new Date();
         tempCard.nextReview = new Date(now.getTime() + analysisResult.nextReviewInterval * 24 * 60 * 60 * 1000);
@@ -194,14 +194,14 @@ export async function POST(request: NextRequest) {
       let analysisResult;
       try {
         analysisResult = JSON.parse(jsonText);
-      } catch (e) {
+      } catch {
         return NextResponse.json(
           { error: 'Gemini出力のJSONパースに失敗', raw: text, extracted: jsonText },
           { status: 500 }
         );
       }
       // --- ここでFSRSロジックを適用 ---
-      let tempCard = createNewFSRSCard(skillName);
+      const tempCard = createNewFSRSCard(skillName);
       if (analysisResult.nextReviewInterval && Number.isFinite(analysisResult.nextReviewInterval)) {
         const now = new Date();
         tempCard.nextReview = new Date(now.getTime() + analysisResult.nextReviewInterval * 24 * 60 * 60 * 1000);
