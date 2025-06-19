@@ -29,8 +29,6 @@ export const viewport: Viewport = {
   maximumScale: 1,
 };
 
-export const themeColor = "#0070f3";
-
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -45,6 +43,7 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <meta name="apple-mobile-web-app-title" content="FlowArc" />
         <link rel="apple-touch-icon" href="/icon-192x192.png" />
+        <link rel="icon" href="/favicon.ico" />
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
