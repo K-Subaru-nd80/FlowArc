@@ -14,13 +14,14 @@ export interface AnalysisResult {
   timeSpent?: number; // 推定練習時間（分）
   environment?: string; // 練習環境（例：「静か」、「騒がしい」、「集中できた」）
   motivation?: number; // 0-10のモチベーションレベル
+  isPractical?: boolean; // 実践的な技能かどうか判定
 
   // --- 追加: 復習日推定の比較用 ---
   fsrsNextReview?: string | Date;
   optimizedNextReview?: string | Date;
 }
 
-export const analyzeLogWithLLM = async (logContent: string, skillName: string, userId: string): Promise<AnalysisResult> => {
+export const analyzeLogWithLLM = async (logContent: string, skillName: string, skillId: string, userId: string, practiceTime?: number): Promise<AnalysisResult> => {
   try {
     const response = await fetch('/api/analyze-log', {
       method: 'POST',
@@ -30,7 +31,9 @@ export const analyzeLogWithLLM = async (logContent: string, skillName: string, u
       body: JSON.stringify({
         logContent,
         skillName,
+        skillId,
         userId, // userIdを必ず含める
+        ...(practiceTime !== undefined ? { practiceTime } : {}),
       }),
     });
 

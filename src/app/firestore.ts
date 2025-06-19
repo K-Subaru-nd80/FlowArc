@@ -27,6 +27,7 @@ export interface Log {
     nextReviewInterval: number;
     difficulty: number;
     retention: number;
+    isPractical?: boolean;
     focusAreas?: string[];
     emotionalState?: string;
     practiceQuality?: number;

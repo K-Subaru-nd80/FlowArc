@@ -156,19 +156,13 @@ export default function Home() {
   if (selectedSkill) {
     return (
       <main style={{ padding: 'var(--spacing-base)' }}>
-        <div style={{ marginBottom: 'var(--spacing-base)' }}>
-          <button
-            onClick={() => setSelectedSkill(null)}
-            style={{ padding: '4px 8px', backgroundColor: '#f0f0f0', border: 'none', borderRadius: 'var(--border-radius)', cursor: 'pointer', fontSize: 'varont-size-small)' }}
-          >
-            ← 戻る
-          </button>
-        </div>
         <LogRecorder
           skillId={selectedSkill.id}
           skillName={selectedSkill.name}
+          category={selectedSkill.category}
           userId={user.uid}
           onLogSaved={handleLogSaved}
+          onBack={() => setSelectedSkill(null)}
         />
       </main>
     );
