@@ -11,15 +11,12 @@ FlowArcは、音声入力・AI分析・科学的アルゴリズム（FSRS）で�
 1. `npm install`
 2. `.env.local`を用意しFirebase/Gemini APIキー等を設定
 3. Firebase認証・Firestoreを有効化、セキュリティルールをデプロイ
-4. `public/`にPWAアイコン（icon-192x192.png, icon-512x512.png）を配置
-5. `npm run dev` で起動
+4. `npm run dev` で起動
 
 ## デプロイ
 - Vercel推奨。GitHub連携・環境変数設定で自動デプロイ
 
 ## ライセンス・画像
 - MIT License
-- アイコンはSVG Repo等の商用利用可素材
-- PWAアイコンは自作またはフリー素材を推奨
 
 ---

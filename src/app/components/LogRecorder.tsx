@@ -70,8 +70,6 @@ const LogRecorder: React.FC<LogRecorderProps> = ({ skillId, skillName, category,
       setFeeling('normal');
       setPracticeTime('');
       setLastAnalysis(analysisResult);
-      onLogSaved();
-      
       alert('ログを保存しました！');
     } catch (error) {
       console.error('ログ保存エラー:', error);
@@ -83,19 +81,19 @@ const LogRecorder: React.FC<LogRecorderProps> = ({ skillId, skillName, category,
 
   return (
     <div style={{
-      maxWidth: '400px',
+      maxWidth: '600px',
       width: '100%',
-      margin: '0 auto',
+      margin: '32px auto',
       backgroundColor: 'white',
-      borderRadius: '12px',
+      borderRadius: '16px',
       overflow: 'hidden',
-      boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
+      boxShadow: '0 2px 16px rgba(0,0,0,0.10)',
     }}>
       {/* ヘッダー */}
       <div style={{
         backgroundColor: '#319795',
         color: 'white',
-        padding: '16px',
+        padding: window.innerWidth <= 600 ? '16px' : '24px',
         display: 'flex',
         alignItems: 'center',
         gap: '12px',
@@ -104,15 +102,15 @@ const LogRecorder: React.FC<LogRecorderProps> = ({ skillId, skillName, category,
         <div
           onClick={onBack}
           style={{
-            width: 40,
-            height: 40,
+            width: window.innerWidth <= 600 ? 40 : 48,
+            height: window.innerWidth <= 600 ? 40 : 48,
             background: '#fff',
             borderRadius: '50%',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             cursor: 'pointer',
-            marginRight: 12,
+            marginRight: window.innerWidth <= 600 ? 12 : 20,
           }}
         >
           <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
@@ -121,7 +119,7 @@ const LogRecorder: React.FC<LogRecorderProps> = ({ skillId, skillName, category,
         </div>
         <h2 style={{ 
           margin: 0, 
-          fontSize: '18px',
+          fontSize: window.innerWidth <= 600 ? '18px' : '22px',
           fontWeight: '600',
           flex: 1,
         }}>
@@ -131,13 +129,13 @@ const LogRecorder: React.FC<LogRecorderProps> = ({ skillId, skillName, category,
 
       {/* コンテンツ */}
       <div style={{ 
-        padding: window.innerWidth <= 480 ? '16px' : '24px',
+        padding: window.innerWidth <= 600 ? '16px' : '32px',
       }}>
         {/* スキル情報 */}
         <div style={{
           display: 'flex',
           gap: '12px',
-          marginBottom: window.innerWidth <= 480 ? '16px' : '24px',
+          marginBottom: window.innerWidth <= 600 ? '16px' : '24px',
           flexWrap: 'wrap',
           alignItems: 'center',
         }}>
@@ -437,31 +435,12 @@ const LogRecorder: React.FC<LogRecorderProps> = ({ skillId, skillName, category,
                   <strong>練習の質:</strong> {lastAnalysis.practiceQuality}/10
                 </div>
               )}
-              {lastAnalysis.timeSpent && (
-                <div style={{ marginBottom: '8px' }}>
-                  <strong>推定練習時間:</strong> {lastAnalysis.timeSpent}分
-                </div>
-              )}
               {lastAnalysis.motivation && (
                 <div style={{ marginBottom: '8px' }}>
                   <strong>モチベーション:</strong> {lastAnalysis.motivation}/10
                 </div>
               )}
-              {lastAnalysis.fsrsNextReview && (
-                <div style={{ marginTop: '12px', paddingTop: '12px', borderTop: '1px solid #e2e8f0' }}>
-                  <strong>科学的推定（FSRS）:</strong> {new Date(lastAnalysis.fsrsNextReview).toLocaleDateString()}（{Math.ceil((new Date(lastAnalysis.fsrsNextReview).getTime() - Date.now())/(1000*60*60*24))}日後）
-                </div>
-              )}
-              {lastAnalysis.nextReviewInterval && (
-                <div style={{ marginTop: '8px' }}>
-                  <strong>AI推定:</strong> {lastAnalysis.nextReviewInterval}日後
-                </div>
-              )}
-              {lastAnalysis.optimizedNextReview && (
-                <div style={{ marginTop: '8px', fontWeight: 'bold', color: '#319795' }}>
-                  <strong>最適化後:</strong> {new Date(lastAnalysis.optimizedNextReview).toLocaleDateString()}（{Math.ceil((new Date(lastAnalysis.optimizedNextReview).getTime() - Date.now())/(1000*60*60*24))}日後）
-                </div>
-              )}
+              {/* 推定練習時間・FSRS・AI推定は非表示化 */}
             </div>
           </div>
         )}
