@@ -51,12 +51,12 @@ export default function Home() {
     }
   };
 
-  const handleLogSaved = () => {
-    if (user) {
-      loadUserSkills(user.uid);
-    }
-    setSelectedSkill(null);
-  };
+  // const handleLogSaved = () => {
+  //   if (user) {
+  //     loadUserSkills(user.uid);
+  //   }
+  //   setSelectedSkill(null);
+  // };
 
   const handleSkillDeleted = (deletedId: string) => {
     setSkills((prevSkills) => prevSkills.filter((skill) => skill.id !== deletedId));
@@ -161,7 +161,6 @@ export default function Home() {
           skillName={selectedSkill.name}
           category={selectedSkill.category}
           userId={user.uid}
-          onLogSaved={handleLogSaved}
           onBack={() => setSelectedSkill(null)}
         />
       </main>

@@ -7,11 +7,10 @@ interface LogRecorderProps {
   skillName: string;
   category?: string;
   userId: string;
-  onLogSaved: () => void;
   onBack: () => void;
 }
 
-const LogRecorder: React.FC<LogRecorderProps> = ({ skillId, skillName, category, userId, onLogSaved, onBack }) => {
+const LogRecorder: React.FC<LogRecorderProps> = ({ skillId, skillName, category, userId, onBack }) => {
   const [logContent, setLogContent] = useState('');
   const [feeling, setFeeling] = useState<'smooth' | 'difficult' | 'normal'>('normal');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
