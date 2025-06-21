@@ -6,10 +6,13 @@ export async function GET(req: NextRequest) {
   const code = url.searchParams.get('code');
   const state = url.searchParams.get('state');
   // stateにアプリのuserId（Firebase Authのuid）を埋め込んでおく想定
-  const appUserId = state || 'sample-app-user-id';
+  const appUserId = state;
 
   if (!code) {
     return NextResponse.json({ error: 'No code' }, { status: 400 });
+  }
+  if (!appUserId) {
+    return NextResponse.json({ error: 'No appUserId (state) provided' }, { status: 400 });
   }
 
   // LINEのアクセストークン取得

@@ -6,12 +6,13 @@ export async function POST(req: NextRequest) {
   // userIdを含むイベントがあればFirestoreに保存
   if (body.events && body.events.length > 0) {
     const lineUserId = body.events[0]?.source?.userId;
-    // TODO: アプリのuserId（Firebase Authのuid等）を取得して紐付ける
-    // ここでは例としてappUserIdを仮で指定
-    const appUserId = 'sample-app-user-id'; // 実際は認証やクエリ等で取得
-    if (lineUserId) {
+    // appUserIdをリクエストボディから取得（なければ保存しない）
+    const appUserId = body.appUserId;
+    if (lineUserId && appUserId) {
       await saveLineUserId(appUserId, lineUserId);
       console.log('LINE userId saved to Firestore:', lineUserId);
+    } else if (!appUserId) {
+      console.warn('appUserIdが指定されていません。Firestoreへの保存はスキップされました。');
     }
   }
   // LINEのWebhookには200を返す必要あり

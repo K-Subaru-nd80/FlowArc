@@ -1,4 +1,5 @@
 import React from 'react';
+import { getAuth } from 'firebase/auth';
 
 const LineConnect: React.FC = () => {
   const clientId = process.env.NEXT_PUBLIC_LINE_CLIENT_ID;
@@ -7,8 +8,15 @@ const LineConnect: React.FC = () => {
   const redirectUri = isLocal
     ? process.env.NEXT_PUBLIC_LINE_REDIRECT_URI_LOCAL || 'http://localhost:3000/api/line-callback'
     : process.env.NEXT_PUBLIC_LINE_REDIRECT_URI || 'https://flow-arc-zeta.vercel.app/api/line-callback';
-  // stateには必要に応じてuidなどを埋め込む
-  const state = 'sample-app-user-id';
+
+  // Firebase Authからuidを取得
+  let state = '';
+  if (typeof window !== 'undefined') {
+    const auth = getAuth();
+    const user = auth.currentUser;
+    state = user?.uid || '';
+  }
+
   const LINE_LOGIN_URL = `https://access.line.me/oauth2/v2.1/authorize?response_type=code&client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri!)}&state=${state}&scope=profile%20openid`;
 
   const handleLineLogin = () => {
