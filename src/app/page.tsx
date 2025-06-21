@@ -177,7 +177,7 @@ export default function Home() {
           }}>
             <h1 style={{
               fontFamily: `'Playfair Display', 'Bebas Neue', 'Montserrat', 'Noto Sans JP', sans-serif`,
-              fontSize: isMobile ? 'clamp(2.8rem, 14vw, 4.5rem)' : 'clamp(5rem, 13vw, 10rem)',
+              fontSize: isMobile ? 'clamp(4rem, 18vw, 4.5rem)' : 'clamp(5rem, 15vw, 12rem)',
               fontWeight: 300,
               color: '#fff',
               letterSpacing: '0.02em',
@@ -190,6 +190,20 @@ export default function Home() {
             }}>
               Flow<br />Arc
             </h1>
+            <div style={{
+              marginTop: isMobile ? '3vh' : '4vh',
+              fontSize: isMobile ? '1.1rem' : '1.5rem',
+              color: 'rgba(255,255,255,0.92)',
+              fontWeight: 400,
+              letterSpacing: '0.3em',
+              textAlign: isMobile ? 'left' : 'center',
+              textShadow: '0 1px 8px rgba(0,0,0,0.18)',
+              whiteSpace: 'pre-line',
+              lineHeight: 1.6,
+              maxWidth: 480,
+            }}>
+              忘れさせない、あなたの技能を。
+            </div>
           </div>
           
           {/* スペーサー */}
