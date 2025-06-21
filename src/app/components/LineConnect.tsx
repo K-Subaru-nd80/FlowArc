@@ -1,26 +1,108 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { getAuth } from 'firebase/auth';
+import { requestNotificationPermission, subscribePush } from '../pushNotification';
+import { registerServiceWorker } from '../serviceWorkerUtils';
 
-const LineConnect: React.FC = () => {
-  const clientId = process.env.NEXT_PUBLIC_LINE_CLIENT_ID;
-  // 環境によってリダイレクトURIを切り替え
-  const isLocal = typeof window !== 'undefined' && window.location.hostname === 'localhost';
-  const redirectUri = isLocal
-    ? process.env.NEXT_PUBLIC_LINE_REDIRECT_URI_LOCAL || 'http://localhost:3000/api/line-callback'
-    : process.env.NEXT_PUBLIC_LINE_REDIRECT_URI || 'https://flow-arc-zeta.vercel.app/api/line-callback';
+const PushNotificationSettings: React.FC = () => {
+  const [notifStatus, setNotifStatus] = useState<'idle' | 'loading' | 'enabled' | 'error'>('idle');
+  const [notifMsg, setNotifMsg] = useState<string>('');
 
-  // Firebase Authからuidを取得
-  let state = '';
-  if (typeof window !== 'undefined') {
-    const auth = getAuth();
-    const user = auth.currentUser;
-    state = user?.uid || '';
-  }
+  useEffect(() => {
+    if (typeof window !== 'undefined' && 'Notification' in window) {
+      if (Notification.permission === 'granted') {
+        setNotifStatus('enabled');
+        setNotifMsg('すでに通知が許可されています');
+      } else if (Notification.permission === 'denied') {
+        setNotifStatus('error');
+        setNotifMsg('通知が拒否されています。ブラウザの設定から許可してください。');
+      }
+    }
+  }, []);
 
-  const LINE_LOGIN_URL = `https://access.line.me/oauth2/v2.1/authorize?response_type=code&client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri!)}&state=${state}&scope=profile%20openid`;
-
-  const handleLineLogin = () => {
-    window.location.href = LINE_LOGIN_URL;
+  const handleEnablePush = async () => {
+    setNotifStatus('loading');
+    setNotifMsg('');
+    try {
+      console.log('通知許可リクエスト開始');
+      
+      // 通知対応チェック
+      if (!('Notification' in window)) {
+        throw new Error('このブラウザは通知に対応していません');
+      }
+      
+      // 現在の許可状態をチェック
+      console.log('現在の通知許可状態:', Notification.permission);
+      
+      const permission = await requestNotificationPermission();
+      console.log('取得した許可状態:', permission);
+      
+      if (permission !== 'granted') {
+        setNotifStatus('error');
+        setNotifMsg(`通知が許可されませんでした (状態: ${permission})`);
+        return;
+      }
+      
+      console.log('Push購読を開始します...');
+      
+      // Service Worker登録の確認と手動登録
+      try {
+        const subscription = await subscribePush();
+        console.log('Push購読結果:', subscription);
+        
+        if (!subscription) throw new Error('購読に失敗しました');
+        
+        console.log('ユーザー確認中...');
+        const auth = getAuth();
+        const user = auth.currentUser;
+        console.log('現在のユーザー:', user?.uid);
+        
+        if (!user) throw new Error('ログインが必要です');
+        
+        console.log('API送信中...');
+        const res = await fetch('/api/push-subscription', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ userId: user.uid, subscription }),
+        });
+        console.log('API レスポンス status:', res.status);
+        
+        if (!res.ok) {
+          const errorText = await res.text();
+          console.log('API エラー:', errorText);
+          throw new Error(`サーバー登録に失敗しました: ${errorText}`);
+        }
+        
+        console.log('購読完了！');
+        setNotifStatus('enabled');
+        setNotifMsg('プッシュ通知が有効になりました！');
+        
+      } catch (swError: unknown) {
+        if (swError instanceof Error) {
+          console.log('Service Worker関連エラー:', swError.message);
+          if (swError.message.includes('タイムアウト') || swError.message.includes('登録')) {
+            console.log('Service Workerを手動登録します...');
+            await registerServiceWorker();
+            setNotifStatus('error');
+            setNotifMsg('Service Workerを登録しました。ページをリロードして再度お試しください。');
+          } else {
+            throw swError;
+          }
+        } else {
+          console.log('Service Worker関連エラー:', swError);
+          throw swError;
+        }
+      }
+      setNotifStatus('enabled');
+      setNotifMsg('プッシュ通知が有効になりました！');
+    } catch (e: unknown) {
+      if (e instanceof Error) {
+        setNotifStatus('error');
+        setNotifMsg(e.message || 'エラーが発生しました');
+      } else {
+        setNotifStatus('error');
+        setNotifMsg('エラーが発生しました');
+      }
+    }
   };
 
   return (
@@ -40,7 +122,7 @@ const LineConnect: React.FC = () => {
         <div style={{
           width: '80px',
           height: '80px',
-          backgroundColor: '#06C755',
+          backgroundColor: '#4A90E2',
           borderRadius: '50%',
           display: 'flex',
           alignItems: 'center',
@@ -48,7 +130,7 @@ const LineConnect: React.FC = () => {
           margin: '0 auto 24px auto',
         }}>
           <svg width="40" height="40" viewBox="0 0 24 24" fill="white">
-            <path d="M19.365 9.863c.349 0 .63.285.63.631 0 .345-.281.63-.63.63H17.61v1.125h1.755c.349 0 .63.283.63.63 0 .344-.281.629-.63.629h-2.386c-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.63-.63h2.386c.346 0 .627.285.627.63 0 .349-.281.63-.63.63H17.61v1.125h1.755zm-3.855 3.016c0 .27-.174.51-.432.596-.064.021-.133.031-.199.031-.211 0-.391-.09-.51-.25l-2.443-3.317v2.94c0 .344-.279.629-.631.629-.346 0-.626-.285-.626-.629V8.108c0-.27.173-.51.43-.595.06-.023.136-.033.194-.033.195 0 .375.104.495.254l2.462 3.33V8.108c0-.345.282-.63.63-.63.345 0 .63.285.63.63v4.771zm-5.741 0c0 .344-.282.629-.631.629-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.631-.63.346 0 .627.285.627.63v4.771zm-2.466.629H4.917c-.345 0-.63-.285-.63-.629V8.108c0-.345.285-.63.63-.63.348 0 .63.285.63.63v4.141h1.756c.348 0 .629.283.629.63 0 .344-.282.629-.629.629M24 10.314C24 4.943 18.615.572 12 .572S0 4.943 0 10.314c0 4.811 4.27 8.842 10.035 9.608.391.082.923.258 1.058.59.12.301.079.771.039 1.08l-.164 1.02c-.045.301-.24 1.186 1.049.645 1.291-.539 6.916-4.070 9.436-6.975C23.176 14.393 24 12.458 24 10.314"/>
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
           </svg>
         </div>
 
@@ -59,7 +141,7 @@ const LineConnect: React.FC = () => {
           margin: '0 0 16px 0',
           letterSpacing: '-0.5px'
         }}>
-          LINE通知連携
+          プッシュ通知設定
         </h2>
         
         <p style={{
@@ -71,20 +153,20 @@ const LineConnect: React.FC = () => {
           marginLeft: 'auto',
           marginRight: 'auto'
         }}>
-          LINEアカウントと連携することで、学習の進捗や目標達成の通知をLINEで受け取ることができます。
+          復習の時期になったら、ブラウザの通知でお知らせします。効率的な学習をサポートします。
         </p>
 
         <button
-          onClick={handleLineLogin}
+          onClick={handleEnablePush}
           style={{
-            background: 'linear-gradient(135deg, #06C755 0%, #04B04A 100%)',
+            background: notifStatus === 'enabled' ? '#4A90E2' : 'linear-gradient(135deg, #4A90E2 0%, #357ABD 100%)',
             color: 'white',
             border: 'none',
             borderRadius: '12px',
             padding: '16px 32px',
             fontSize: '18px',
             fontWeight: '600',
-            cursor: 'pointer',
+            cursor: notifStatus === 'enabled' ? 'default' : 'pointer',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -92,22 +174,29 @@ const LineConnect: React.FC = () => {
             margin: '0 auto',
             minWidth: '200px',
             transition: 'all 0.3s ease',
-            boxShadow: '0 4px 16px rgba(6, 199, 85, 0.3)',
+            boxShadow: '0 4px 16px rgba(74, 144, 226, 0.3)',
+            opacity: notifStatus === 'enabled' ? 0.7 : 1,
           }}
+          disabled={notifStatus === 'enabled' || notifStatus === 'loading'}
           onMouseEnter={(e) => {
-            (e.target as HTMLElement).style.transform = 'translateY(-2px)';
-            (e.target as HTMLElement).style.boxShadow = '0 6px 24px rgba(6, 199, 85, 0.4)';
+            if (notifStatus !== 'enabled') {
+              (e.target as HTMLElement).style.transform = 'translateY(-2px)';
+              (e.target as HTMLElement).style.boxShadow = '0 6px 24px rgba(74, 144, 226, 0.4)';
+            }
           }}
           onMouseLeave={(e) => {
-            (e.target as HTMLElement).style.transform = 'translateY(0)';
-            (e.target as HTMLElement).style.boxShadow = '0 4px 16px rgba(6, 199, 85, 0.3)';
+            if (notifStatus !== 'enabled') {
+              (e.target as HTMLElement).style.transform = 'translateY(0)';
+              (e.target as HTMLElement).style.boxShadow = '0 4px 16px rgba(74, 144, 226, 0.3)';
+            }
           }}
         >
           <svg width="20" height="20" viewBox="0 0 24 24" fill="white">
-            <path d="M19.365 9.863c.349 0 .63.285.63.631 0 .345-.281.63-.63.63H17.61v1.125h1.755c.349 0 .63.283.63.63 0 .344-.281.629-.63.629h-2.386c-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.63-.63h2.386c.346 0 .627.285.627.63 0 .349-.281.63-.63.63H17.61v1.125h1.755zm-3.855 3.016c0 .27-.174.51-.432.596-.064.021-.133.031-.199.031-.211 0-.391-.09-.51-.25l-2.443-3.317v2.94c0 .344-.279.629-.631.629-.346 0-.626-.285-.626-.629V8.108c0-.27.173-.51.43-.595.06-.023.136-.033.194-.033.195 0 .375.104.495.254l2.462 3.33V8.108c0-.345.282-.63.63-.63.345 0 .63.285.63.63v4.771zm-5.741 0c0 .344-.282.629-.631.629-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.631-.63.346 0 .627.285.627.63v4.771zm-2.466.629H4.917c-.345 0-.63-.285-.63-.629V8.108c0-.345.285-.63.63-.63.348 0 .63.285.63.63v4.141h1.756c.348 0 .629.283.629.63 0 .344-.282.629-.629.629M24 10.314C24 4.943 18.615.572 12 .572S0 4.943 0 10.314c0 4.811 4.27 8.842 10.035 9.608.391.082.923.258 1.058.59.12.301.079.771.039 1.08l-.164 1.02c-.045.301-.24 1.186 1.049.645 1.291-.539 6.916-4.070 9.436-6.975C23.176 14.393 24 12.458 24 10.314"/>
+            <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.89 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/>
           </svg>
-          LINEで連携する
+          {notifStatus === 'loading' ? '設定中...' : notifStatus === 'enabled' ? '通知ON' : '通知を有効にする'}
         </button>
+        {notifMsg && <div style={{ color: notifStatus === 'error' ? 'red' : '#4A90E2', marginBottom: 12, marginTop: 16 }}>{notifMsg}</div>}
 
         <div style={{
           marginTop: '32px',
@@ -118,9 +207,9 @@ const LineConnect: React.FC = () => {
           color: '#666',
           lineHeight: '1.5'
         }}>
-          <p style={{ margin: '0 0 8px 0', fontWeight: '600' }}>🔒 プライバシーについて</p>
+          <p style={{ margin: '0 0 8px 0', fontWeight: '600' }}>� 通知について</p>
           <p style={{ margin: 0 }}>
-            お客様のプライバシーを尊重します。取得した情報は通知送信のためのみに使用し、第三者と共有することはありません。
+            復習推奨日になったらブラウザ通知でお知らせします。通知は学習効率向上のためのみに使用されます。
           </p>
         </div>
       </div>
@@ -128,4 +217,4 @@ const LineConnect: React.FC = () => {
   );
 };
 
-export default LineConnect;
+export default PushNotificationSettings;
