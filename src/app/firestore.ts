@@ -180,3 +180,13 @@ export const updateSkillFSRSCard = async (skillId: string, userId: string, fsrsC
     throw error;
   }
 };
+
+// LINEユーザーIDをFirestoreに保存
+export const saveLineUserId = async (appUserId: string, lineUserId: string) => {
+  try {
+    await setDoc(doc(db, 'users', appUserId), { lineUserId }, { merge: true });
+  } catch (error) {
+    console.error('Error saving LINE userId:', error);
+    throw error;
+  }
+};

@@ -6,6 +6,7 @@ import SignInButton from './components/SignInButton';
 import SkillForm from './components/SkillForm';
 import SkillCard from './components/SkillCard';
 import LogRecorder from './components/LogRecorder';
+import LineConnect from './components/LineConnect';
 import { addSkill, getUserSkills, Skill } from './firestore';
 import './firebaseInit'; // Firebase初期化
 import LogoutButton from './components/LogoutButton';
@@ -17,6 +18,7 @@ export default function Home() {
   const [selectedSkill, setSelectedSkill] = useState<Skill | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [categoryTab, setCategoryTab] = useState<'all' | string>('all');
+  const [showSettings, setShowSettings] = useState(false);
 
   useEffect(() => {
     const auth = getAuth();
@@ -153,6 +155,73 @@ export default function Home() {
     );
   }
 
+  if (showSettings) {
+    return (
+      <main style={{ padding: 0, minHeight: '100vh', background: '#fff' }}>
+        {/* ヘッダー */}
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          background: 'linear-gradient(135deg, #418089 0%, #5e8e96 100%)',
+          color: '#fff',
+          padding: '20px 32px 16px 32px',
+          fontFamily: '"Times New Roman", "Yu Mincho", "Hiragino Mincho ProN", serif',
+          fontWeight: 600,
+          fontSize: 28,
+          position: 'sticky',
+          top: 0,
+          zIndex: 100,
+          boxShadow: '0 4px 16px rgba(65, 128, 137, 0.15)',
+          backdropFilter: 'blur(10px)'
+        }}>
+          <span 
+            onClick={() => setShowSettings(false)}
+            style={{ 
+              fontSize: 36, 
+              letterSpacing: 3,
+              textShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+              fontWeight: 700,
+              cursor: 'pointer',
+              transition: 'transform 0.2s ease',
+            }}
+            onMouseEnter={(e) => (e.target as HTMLElement).style.transform = 'scale(1.05)'}
+            onMouseLeave={(e) => (e.target as HTMLElement).style.transform = 'scale(1)'}
+          >
+            FlowArc
+          </span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+            <button
+              onClick={() => setShowSettings(false)}
+              style={{
+                background: 'rgba(255, 255, 255, 0.2)',
+                border: 'none',
+                borderRadius: '50%',
+                width: '40px',
+                height: '40px',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                transition: 'background 0.2s ease',
+              }}
+              onMouseEnter={(e) => (e.target as HTMLElement).style.background = 'rgba(255, 255, 255, 0.3)'}
+              onMouseLeave={(e) => (e.target as HTMLElement).style.background = 'rgba(255, 255, 255, 0.2)'}
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
+                <polyline points="15 18 9 12 15 6"></polyline>
+              </svg>
+            </button>
+            <LogoutButton />
+          </div>
+        </div>
+        <div style={{ padding: '20px 16px', background: 'linear-gradient(to bottom, #fafbfc 0%, #ffffff 100%)', minHeight: 'calc(100vh - 80px)' }}>
+          <LineConnect />
+        </div>
+      </main>
+    );
+  }
+
   if (selectedSkill) {
     return (
       <main style={{ padding: 'var(--spacing-base)' }}>
@@ -186,13 +255,43 @@ export default function Home() {
         boxShadow: '0 4px 16px rgba(65, 128, 137, 0.15)',
         backdropFilter: 'blur(10px)'
       }}>
-        <span style={{ 
-          fontSize: 36, 
-          letterSpacing: 3,
-          textShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
-          fontWeight: 700
-        }}>FlowArc</span>
-        <div style={{ marginLeft: 24 }}>
+        <span 
+          style={{ 
+            fontSize: 36, 
+            letterSpacing: 3,
+            textShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+            fontWeight: 700,
+            cursor: 'pointer',
+            transition: 'transform 0.2s ease',
+          }}
+          onMouseEnter={(e) => (e.target as HTMLElement).style.transform = 'scale(1.05)'}
+          onMouseLeave={(e) => (e.target as HTMLElement).style.transform = 'scale(1)'}
+        >
+          FlowArc
+        </span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+          <button
+            onClick={() => setShowSettings(true)}
+            style={{
+              background: 'rgba(255, 255, 255, 0.2)',
+              border: 'none',
+              borderRadius: '50%',
+              width: '40px',
+              height: '40px',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              transition: 'background 0.2s ease',
+            }}
+            onMouseEnter={(e) => (e.target as HTMLElement).style.background = 'rgba(255, 255, 255, 0.3)'}
+            onMouseLeave={(e) => (e.target as HTMLElement).style.background = 'rgba(255, 255, 255, 0.2)'}
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
+              <circle cx="12" cy="12" r="3"></circle>
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1 1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+            </svg>
+          </button>
           <LogoutButton />
         </div>
       </div>
